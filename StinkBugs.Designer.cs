@@ -22,9 +22,9 @@
         private void InitializeComponent()
         {
             panel1 = new Panel();
+            completionLabel = new Label();
             label1 = new Label();
             panel2 = new Panel();
-            completionLabel = new Label();
             panel1.SuspendLayout();
             SuspendLayout();
             // 
@@ -38,6 +38,17 @@
             panel1.Name = "panel1";
             panel1.Size = new Size(1085, 94);
             panel1.TabIndex = 0;
+            // 
+            // completionLabel
+            // 
+            completionLabel.AutoSize = true;
+            completionLabel.Font = new Font("Times New Roman", 14.25F, FontStyle.Regular, GraphicsUnit.Point, 204);
+            completionLabel.ForeColor = SystemColors.ControlLightLight;
+            completionLabel.Location = new Point(0, 53);
+            completionLabel.Name = "completionLabel";
+            completionLabel.Size = new Size(145, 21);
+            completionLabel.TabIndex = 2;
+            completionLabel.Text = "time for complete:";
             // 
             // label1
             // 
@@ -60,17 +71,6 @@
             panel2.Name = "panel2";
             panel2.Size = new Size(1085, 439);
             panel2.TabIndex = 1;
-            // 
-            // completionLabel
-            // 
-            completionLabel.AutoSize = true;
-            completionLabel.Font = new Font("Times New Roman", 14.25F, FontStyle.Regular, GraphicsUnit.Point, 204);
-            completionLabel.ForeColor = SystemColors.ControlLightLight;
-            completionLabel.Location = new Point(0, 76);
-            completionLabel.Name = "completionLabel";
-            completionLabel.Size = new Size(145, 21);
-            completionLabel.TabIndex = 2;
-            completionLabel.Text = "time for complete:";
             // 
             // StinkBugs
             // 

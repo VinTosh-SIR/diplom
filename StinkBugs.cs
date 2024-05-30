@@ -134,15 +134,12 @@ namespace Diplom
 
             // Draw storage
             g.FillRectangle(storageBrush, new Rectangle(storageLocation.X, storageLocation.Y, storageSize, storageSize));
-            g.DrawString($"{storageFruits} фруктів", font, textBrush, storageLocation.X, storageLocation.Y + storageSize + 5);
+            g.DrawString($"{storageFruits} fruits", font, textBrush, storageLocation.X, storageLocation.Y + storageSize + 5);
 
             // Draw drones
             foreach (var drone in drones)
             {
                 g.FillRectangle(droneBrush, new Rectangle(drone.Position.X, drone.Position.Y, 10, 10));
-
-                // Draw connection radius
-                g.DrawEllipse(connectionPen, drone.Position.X - drone.ConnectionRadius, drone.Position.Y - drone.ConnectionRadius, drone.ConnectionRadius * 2, drone.ConnectionRadius * 2);
 
                 // Draw status text
                 if (drone.InContact)
@@ -157,14 +154,14 @@ namespace Diplom
                 {
                     g.DrawString("I need help", font, textBrush, drone.Position.X, drone.Position.Y - 35);
                 }
-                g.DrawString($"{drone.FruitsCollected} фруктів", font, textBrush, drone.Position.X, drone.Position.Y - 45);
+                g.DrawString($"{drone.FruitsCollected} fruits", font, textBrush, drone.Position.X, drone.Position.Y - 45);
             }
 
             // Draw trees and fruits
             foreach (var tree in trees)
             {
                 g.FillRectangle(treeBrush, new Rectangle(tree.Position.X, tree.Position.Y, 20, 20)); // Example tree size
-                g.DrawString($"{tree.Fruits} плодів", font, textBrush, tree.Position.X, tree.Position.Y - 15);
+                g.DrawString($"{tree.Fruits} fruits", font, textBrush, tree.Position.X, tree.Position.Y - 15);
             }
         }
 
@@ -200,7 +197,7 @@ namespace Diplom
         public void UpdateTotalFruitsLabel()
         {
             int totalFruits = trees.Sum(tree => tree.Fruits);
-            totalFruitsLabel.Text = $"Загальна кількість плодів на деревах: {totalFruits}";
+            totalFruitsLabel.Text = $"Total count fruits o trees: {totalFruits}";
         }
     }
 
@@ -223,19 +220,23 @@ namespace Diplom
         private DateTime collectStartTime;
         private DateTime helpRequestTime;
         private const int maxCollectingTime = 2000; // 2 секунди у мілісекундах
-        private const int maxHelpRequestTime = 3500; // 1.5 секунди у мілісекундах
-        private const int maxTreeFruitsForHelp = 15;
-        private const int helpWaitTime = 7000;
+        private const int maxHelpRequestTime = 1000; // 1.5 секунди у мілісекундах
 
         public void RequestHelp()
         {
             NeedHelp = true;
             helpRequestTime = DateTime.Now;
+            HelpDrone = null;
         }
 
         public bool CanHelp(Drone otherDrone)
         {
-            return !NeedHelp && FruitsCollected < MaxFruits && otherDrone.FruitsCollected > 0 && !otherDrone.NeedHelp && IsInContact(otherDrone);
+            if (FruitsCollected == 0 && !NeedHelp && !otherDrone.NeedHelp && otherDrone.FruitsCollected > 0 && otherDrone.targetTree != null && otherDrone.targetTree.Fruits > 15 && IsInContact(otherDrone))
+            {
+                otherDrone.HelpDrone = this; // Призначаємо HelpDrone
+                return true;
+            }
+            return false;
         }
 
         public Drone(Point startPosition, int dx, int dy, int connectionRadius)
@@ -254,17 +255,24 @@ namespace Diplom
 
         public void Update(int panelWidth, int panelHeight, List<Tree> trees, Point storageLocation, int storageSize, ref int storageFruits, List<Drone> allDrones)
         {
-            bool treeHasFruit = false;
-            foreach (var tree in trees)
-            {
-                if (tree.Fruits > 0)
-                {
-                    treeHasFruit = true;
-                    break;
-                }
-            }
-            bool noHelpRequested = (DateTime.Now - helpRequestTime).TotalMilliseconds >= 7000;
 
+            if (!NeedHelp && FruitsCollected > 0 && FruitsCollected < MaxFruits && Collecting)
+            {
+                RequestHelp();
+            }
+            // Check if drone has been waiting for help too long
+            if (FruitsCollected > 15 && (DateTime.Now - helpRequestTime).TotalMilliseconds >= 2000)
+            {
+                // Move towards storage to drop off fruits
+                MoveTowards(storageLocation);
+                if (IsAtLocation(storageLocation, storageSize))
+                {
+                    storageFruits += FruitsCollected; // Add collected fruits to storage
+                    FruitsCollected = 0; // Drop off fruits
+                    NeedHelp = false;
+                }
+                return;
+            }
 
             // Check if collecting time exceeded
             if (Collecting)
@@ -281,62 +289,41 @@ namespace Diplom
             }
 
             // Check if help request time exceeded
-            if (MaxFruits >= FruitsCollected)
+            if (NeedHelp)
             {
                 if ((DateTime.Now - helpRequestTime).TotalMilliseconds >= maxHelpRequestTime)
                 {
                     NeedHelp = false;
                 }
-                else
+                else if (HelpDrone != null) // Перевірка на null
                 {
                     MoveTowards(HelpDrone.Position);
                     return;
                 }
             }
 
-            if (NeedHelp)
+            // Help other drones
+            foreach (var otherDrone in allDrones)
             {
-                foreach (var otherDrone in allDrones)
+                if (otherDrone.CanHelp(this))
                 {
-                    if (otherDrone.CanHelp(this))
+                    MoveTowards(otherDrone.Position);
+                    if (IsAtLocation(otherDrone.Position, 10)) // If the other drone has reached this drone
                     {
-                        otherDrone.MoveTowards(Position);
-                        if (IsAtLocation(otherDrone.Position, 10)) // Якщо інший дрон підлетів до поточного
+                        int fruitsToTransfer = Math.Min(MaxFruits - FruitsCollected, otherDrone.FruitsCollected);
+                        FruitsCollected += fruitsToTransfer;
+                        otherDrone.FruitsCollected -= fruitsToTransfer;
+                        if (FruitsCollected >= MaxFruits)
                         {
-                            int fruitsToTransfer = Math.Min(MaxFruits - FruitsCollected, otherDrone.FruitsCollected);
-                            FruitsCollected += fruitsToTransfer;
-                            otherDrone.FruitsCollected -= fruitsToTransfer;
-                            break; // Зупиняємо пошук допомоги після того, як знайдено першого дрона для допомоги
+                            NeedHelp = false;
+                            break; // Stop looking for help after reaching the maximum fruits
                         }
                     }
                 }
-                return;
-            }
-
-            if (FruitsCollected < MaxFruits && NeedHelp)
-            {
-                foreach (var otherDrone in allDrones)
-                {
-                    if (CanHelp(otherDrone))
-                    {
-                        MoveTowards(otherDrone.Position);
-                        if (IsAtLocation(otherDrone.Position, 10)) // Якщо інший дрон підлетів до поточного
-                        {
-                            int fruitsToTransfer = Math.Min(MaxFruits - FruitsCollected, otherDrone.FruitsCollected);
-                            FruitsCollected += fruitsToTransfer;
-                            otherDrone.FruitsCollected -= fruitsToTransfer;
-                            if (FruitsCollected >= MaxFruits)
-                            {
-                                NeedHelp = false;
-                                break; // Зупиняємо пошук допомоги після досягнення максимуму плодів
-                            }
-                        }
-                    }
-                }
-                return;
             }
 
 
+            // Move towards storage if drone is full
             if (FruitsCollected >= MaxFruits)
             {
                 MoveTowards(storageLocation);
@@ -348,6 +335,7 @@ namespace Diplom
                 return;
             }
 
+            // Move towards target tree if there is one
             if (targetTree != null)
             {
                 if (targetTree.Fruits > 0)
@@ -360,8 +348,8 @@ namespace Diplom
                 }
                 else
                 {
-                    targetTree = null; // Якщо на дереві більше немає плодів, перестаємо його цілити
-                    ChooseRandomDirection(); // Випадковий напрямок
+                    targetTree = null; // If there are no more fruits on the tree, stop targeting it
+                    ChooseRandomDirection(); // Random direction
                 }
                 return;
             }
@@ -377,6 +365,7 @@ namespace Diplom
                 }
             }
         }
+
 
         private void ChooseRandomDirection()
         {
@@ -437,17 +426,13 @@ namespace Diplom
                         targetTree = null; // Очищаємо вибране дерево
                         NeedHelp = false; // Скасовуємо запит про допомогу
                     }
-                    else
-                    {
-                        RequestHelp();
-                    }
                 }
             }
         }
 
         public bool IsInContact(Drone otherDrone)
         {
-            int distance = (int)Math.Sqrt(Math.Pow(Position.X - otherDrone.Position.X, 4) + Math.Pow(Position.Y - otherDrone.Position.Y, 4));
+            int distance = (int)Math.Sqrt(Math.Pow(Position.X - otherDrone.Position.X, 2) + Math.Pow(Position.Y - otherDrone.Position.Y, 2));
             return distance <= ConnectionRadius;
         }
     }
