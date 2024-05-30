@@ -32,3 +32,4 @@ C:\Users\vintosh\Desktop\диплом\Diplom\Diplom\obj\Debug\net8.0-windows\Dip
 C:\Users\vintosh\Desktop\диплом\Diplom\Diplom\obj\Debug\net8.0-windows\Diplom.csproj.Up2Date
 C:\Users\vintosh\Desktop\диплом\Diplom\Diplom\obj\Debug\net8.0-windows\Diplom.StinkBugs.resources
 C:\Users\vintosh\Desktop\диплом\Diplom\Diplom\obj\Debug\net8.0-windows\Diplom.sourcelink.json
+C:\Users\vintosh\Desktop\диплом\Diplom\Diplom\obj\Debug\net8.0-windows\Diplom.CheckResult.resources

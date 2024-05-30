@@ -31,7 +31,6 @@ namespace Diplom
         {
             panel1 = new Panel();
             panel5 = new Panel();
-            button3 = new Button();
             panel4 = new Panel();
             button2 = new Button();
             panel3 = new Panel();
@@ -40,7 +39,6 @@ namespace Diplom
             label1 = new Label();
             label2 = new Label();
             panel1.SuspendLayout();
-            panel5.SuspendLayout();
             panel4.SuspendLayout();
             panel3.SuspendLayout();
             panel2.SuspendLayout();
@@ -61,26 +59,12 @@ namespace Diplom
             // panel5
             // 
             panel5.BackColor = SystemColors.MenuHighlight;
-            panel5.Controls.Add(button3);
             panel5.Dock = DockStyle.Fill;
             panel5.Location = new Point(312, 127);
             panel5.Name = "panel5";
             panel5.Padding = new Padding(30);
             panel5.Size = new Size(395, 441);
             panel5.TabIndex = 4;
-            // 
-            // button3
-            // 
-            button3.Cursor = Cursors.Hand;
-            button3.Dock = DockStyle.Bottom;
-            button3.Font = new Font("TechnicBold", 14.25F, FontStyle.Regular, GraphicsUnit.Point, 2);
-            button3.ForeColor = SystemColors.MenuHighlight;
-            button3.Location = new Point(30, 361);
-            button3.Name = "button3";
-            button3.Size = new Size(335, 50);
-            button3.TabIndex = 0;
-            button3.Text = "Comparison chart";
-            button3.UseVisualStyleBackColor = true;
             // 
             // panel4
             // 
@@ -102,8 +86,9 @@ namespace Diplom
             button2.Name = "button2";
             button2.Size = new Size(252, 74);
             button2.TabIndex = 2;
-            button2.Text = "Centralized algorithm";
+            button2.Text = "Check result";
             button2.UseVisualStyleBackColor = true;
+            button2.Click += changeFormToCheckResult;
             // 
             // panel3
             // 
@@ -174,7 +159,6 @@ namespace Diplom
             Name = "Start";
             Text = "Algorythm test";
             panel1.ResumeLayout(false);
-            panel5.ResumeLayout(false);
             panel4.ResumeLayout(false);
             panel3.ResumeLayout(false);
             panel2.ResumeLayout(false);
@@ -190,9 +174,7 @@ namespace Diplom
         private Button button1;
         private Panel panel4;
         private Panel panel3;
-        private Button button2;
         private Panel panel5;
-        private Button button3;
         private Label label1;
 
         private void changeFormToStinkBugs(object sender, EventArgs e)
@@ -204,5 +186,17 @@ namespace Diplom
             frm.Show();
             this.Hide();
         }
+
+        private void changeFormToCheckResult(object sender, EventArgs e)
+        {
+            var frm = new CheckResult();
+            frm.Location = this.Location;
+            frm.StartPosition = FormStartPosition.Manual;
+            frm.FormClosing += delegate { this.Show(); };
+            frm.Show();
+            this.Hide();
+        }
+
+        private Button button2;
     }
 }
