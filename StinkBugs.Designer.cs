@@ -22,29 +22,22 @@
         private void InitializeComponent()
         {
             panel1 = new Panel();
-            panel2 = new Panel();
             label1 = new Label();
+            panel2 = new Panel();
+            completionLabel = new Label();
             panel1.SuspendLayout();
             SuspendLayout();
             // 
             // panel1
             // 
             panel1.BackColor = Color.LightSeaGreen;
+            panel1.Controls.Add(completionLabel);
             panel1.Controls.Add(label1);
             panel1.Dock = DockStyle.Top;
             panel1.Location = new Point(0, 0);
             panel1.Name = "panel1";
             panel1.Size = new Size(1085, 94);
             panel1.TabIndex = 0;
-            // 
-            // panel2
-            // 
-            panel2.BackColor = Color.FromArgb(26, 114, 119);
-            panel2.Dock = DockStyle.Fill;
-            panel2.Location = new Point(0, 94);
-            panel2.Name = "panel2";
-            panel2.Size = new Size(1085, 439);
-            panel2.TabIndex = 1;
             // 
             // label1
             // 
@@ -59,6 +52,26 @@
             label1.Text = "Return back press ESC";
             label1.TextAlign = ContentAlignment.MiddleLeft;
             // 
+            // panel2
+            // 
+            panel2.BackColor = Color.FromArgb(26, 114, 119);
+            panel2.Dock = DockStyle.Fill;
+            panel2.Location = new Point(0, 94);
+            panel2.Name = "panel2";
+            panel2.Size = new Size(1085, 439);
+            panel2.TabIndex = 1;
+            // 
+            // completionLabel
+            // 
+            completionLabel.AutoSize = true;
+            completionLabel.Font = new Font("Times New Roman", 14.25F, FontStyle.Regular, GraphicsUnit.Point, 204);
+            completionLabel.ForeColor = SystemColors.ControlLightLight;
+            completionLabel.Location = new Point(0, 76);
+            completionLabel.Name = "completionLabel";
+            completionLabel.Size = new Size(145, 21);
+            completionLabel.TabIndex = 2;
+            completionLabel.Text = "time for complete:";
+            // 
             // StinkBugs
             // 
             ClientSize = new Size(1085, 533);
@@ -72,5 +85,6 @@
         }
 
         private Label label1;
+        private Label completionLabel;
     }
 }

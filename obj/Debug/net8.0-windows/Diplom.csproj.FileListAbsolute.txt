@@ -31,3 +31,4 @@ C:\Users\vintosh\Desktop\диплом\Diplom\Diplom\bin\Debug\net8.0-windows\run
 C:\Users\vintosh\Desktop\диплом\Diplom\Diplom\obj\Debug\net8.0-windows\Diplom.csproj.AssemblyReference.cache
 C:\Users\vintosh\Desktop\диплом\Diplom\Diplom\obj\Debug\net8.0-windows\Diplom.csproj.Up2Date
 C:\Users\vintosh\Desktop\диплом\Diplom\Diplom\obj\Debug\net8.0-windows\Diplom.StinkBugs.resources
+C:\Users\vintosh\Desktop\диплом\Diplom\Diplom\obj\Debug\net8.0-windows\Diplom.sourcelink.json

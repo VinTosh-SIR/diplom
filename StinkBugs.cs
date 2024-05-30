@@ -16,9 +16,13 @@ namespace Diplom
         private const int storageSize = 100;
         private int storageFruits;
         private Label totalFruitsLabel;
+        private DateTime startTime;
+        private bool isCompleted;
 
         public StinkBugs()
         {
+            startTime = DateTime.Now;
+            isCompleted = false;
             InitializeComponent();
             this.KeyPreview = true;
             this.KeyDown += new KeyEventHandler(Close_ESC);
@@ -49,7 +53,7 @@ namespace Diplom
             totalFruitsLabel.AutoSize = true;
             panel1.Controls.Add(totalFruitsLabel);
 
-            UpdateTotalFruitsLabel();
+            UpdateTotalFruitsLabel();   
         }
 
         private void Close_ESC(object sender, KeyEventArgs e)
@@ -66,10 +70,30 @@ namespace Diplom
             {
                 drone.Update(panel2.Width, panel2.Height, trees, storageLocation, storageSize, ref storageFruits, drones); // Передаємо список дронів для перевірки можливості допомоги
             }
+            if (trees.Sum(tree => tree.Fruits) == 0 && !isCompleted)
+            {
+                DisplayCompletionTime();
+            }
+            else
+            {
+                TimeSpan elapsed = DateTime.Now - startTime;
+                completionLabel.Text = $"Algorythm work: {elapsed.TotalSeconds:F2} seconds";
+            }
             CheckDroneConnections();
             UpdateTotalFruitsLabel();
             panel2.Invalidate(); // Force panel to repaint
+
+
         }
+
+        private void DisplayCompletionTime()
+        {
+            TimeSpan elapsed = DateTime.Now - startTime;
+            completionLabel.Text = $"All fruits are collected in {elapsed.TotalSeconds:F2} seconds.";
+            gameTimer.Stop();
+            isCompleted = true;
+        }
+
 
         private void CheckDroneConnections()
         {
@@ -173,7 +197,7 @@ namespace Diplom
             }
         }
 
-        private void UpdateTotalFruitsLabel()
+        public void UpdateTotalFruitsLabel()
         {
             int totalFruits = trees.Sum(tree => tree.Fruits);
             totalFruitsLabel.Text = $"Загальна кількість плодів на деревах: {totalFruits}";
@@ -182,6 +206,7 @@ namespace Diplom
 
     public class Drone
     {
+
         public Point Position { get; private set; }
         private int dx;
         private int dy;
@@ -414,7 +439,7 @@ namespace Diplom
                     }
                     else
                     {
-                        RequestHelp(); // Запит про допомогу
+                        RequestHelp();
                     }
                 }
             }
