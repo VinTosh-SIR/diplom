@@ -22,6 +22,8 @@
         private void InitializeComponent()
         {
             panel1 = new Panel();
+            button2 = new Button();
+            button1 = new Button();
             completionLabel = new Label();
             label1 = new Label();
             panel2 = new Panel();
@@ -31,6 +33,8 @@
             // panel1
             // 
             panel1.BackColor = Color.LightSeaGreen;
+            panel1.Controls.Add(button2);
+            panel1.Controls.Add(button1);
             panel1.Controls.Add(completionLabel);
             panel1.Controls.Add(label1);
             panel1.Dock = DockStyle.Top;
@@ -38,6 +42,34 @@
             panel1.Name = "panel1";
             panel1.Size = new Size(1085, 94);
             panel1.TabIndex = 0;
+            // 
+            // button2
+            // 
+            button2.BackColor = Color.MediumSeaGreen;
+            button2.Font = new Font("SuperFrench", 15.7499981F, FontStyle.Bold, GraphicsUnit.Point, 2);
+            button2.ForeColor = SystemColors.ControlLightLight;
+            button2.Location = new Point(892, 29);
+            button2.Name = "button2";
+            button2.Padding = new Padding(2);
+            button2.Size = new Size(181, 54);
+            button2.TabIndex = 3;
+            button2.Text = "Start centralized algorithm";
+            button2.UseVisualStyleBackColor = false;
+            button2.Click += button2_Click;
+            // 
+            // button1
+            // 
+            button1.BackColor = Color.MediumAquamarine;
+            button1.Font = new Font("SuperFrench", 15.7499981F, FontStyle.Bold, GraphicsUnit.Point, 2);
+            button1.ForeColor = SystemColors.ControlLightLight;
+            button1.Location = new Point(706, 29);
+            button1.Name = "button1";
+            button1.Padding = new Padding(2);
+            button1.Size = new Size(180, 54);
+            button1.TabIndex = 2;
+            button1.Text = "Start swarm algorithm";
+            button1.UseVisualStyleBackColor = false;
+            button1.Click += button1_Click;
             // 
             // completionLabel
             // 
@@ -86,5 +118,7 @@
 
         private Label label1;
         private Label completionLabel;
+        private Button button2;
+        private Button button1;
     }
 }

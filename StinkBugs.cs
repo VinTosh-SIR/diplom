@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
+using System.Drawing.Drawing2D;
 using System.Linq;
 using System.Windows.Forms;
 
@@ -33,12 +34,6 @@ namespace Diplom
             storageLocation = new Point(panel2.Width - storageSize, 0);
             storageFruits = 0;
 
-            // Setup game timer
-            gameTimer = new System.Windows.Forms.Timer();
-            gameTimer.Interval = 20; // Update game state every 20 ms
-            gameTimer.Tick += new EventHandler(GameUpdate);
-            gameTimer.Start();
-
             panel2.Paint += new PaintEventHandler(Panel2_Paint);
 
             // Generate drones
@@ -53,7 +48,7 @@ namespace Diplom
             totalFruitsLabel.AutoSize = true;
             panel1.Controls.Add(totalFruitsLabel);
 
-            UpdateTotalFruitsLabel();   
+            UpdateTotalFruitsLabel();
         }
 
         private void Close_ESC(object sender, KeyEventArgs e)
@@ -68,7 +63,7 @@ namespace Diplom
         {
             foreach (var drone in drones)
             {
-                drone.Update(panel2.Width, panel2.Height, trees, storageLocation, storageSize, ref storageFruits, drones); // Передаємо список дронів для перевірки можливості допомоги
+                drone.Update(panel2.Width, panel2.Height, trees, storageLocation, storageSize, ref storageFruits, drones, swarmMode, centralizedMode);
             }
             if (trees.Sum(tree => tree.Fruits) == 0 && !isCompleted)
             {
@@ -199,6 +194,34 @@ namespace Diplom
             int totalFruits = trees.Sum(tree => tree.Fruits);
             totalFruitsLabel.Text = $"Total count fruits o trees: {totalFruits}";
         }
+        private bool swarmMode = false;
+        private bool centralizedMode = false;
+
+        private void button1_Click(object sender, EventArgs e)
+        {
+            swarmMode = true;
+            centralizedMode = false;
+
+            StartAlgorithm();
+        }
+        private void button2_Click(object sender, EventArgs e)
+        {
+            swarmMode = false;
+            centralizedMode = true;
+            StartAlgorithm();
+        }
+
+        private void StartAlgorithm()
+        {
+            // Запустити алгоритм
+            gameTimer = new System.Windows.Forms.Timer();
+            gameTimer.Interval = 20; // Оновлювати стан гри кожні 20 мс
+            gameTimer.Tick += new EventHandler(GameUpdate);
+            gameTimer.Start();
+
+            startTime = DateTime.Now;
+            button2.Enabled = false; // Вимкнути кнопку після запуску алгоритму
+        }
     }
 
     public class Drone
@@ -253,118 +276,206 @@ namespace Diplom
             this.random = new Random();
         }
 
-        public void Update(int panelWidth, int panelHeight, List<Tree> trees, Point storageLocation, int storageSize, ref int storageFruits, List<Drone> allDrones)
+        public void Update(int panelWidth, int panelHeight, List<Tree> trees, Point storageLocation, int storageSize, ref int storageFruits, List<Drone> allDrones, bool swarmMode, bool centralizedMode)
         {
-
-            if (!NeedHelp && FruitsCollected > 0 && FruitsCollected < MaxFruits && Collecting)
+            if (centralizedMode)
             {
-                RequestHelp();
-            }
-            // Check if drone has been waiting for help too long
-            if (FruitsCollected > 15 && (DateTime.Now - helpRequestTime).TotalMilliseconds >= 2000)
-            {
-                // Move towards storage to drop off fruits
-                MoveTowards(storageLocation);
-                if (IsAtLocation(storageLocation, storageSize))
+                // Логіка для centralizedMode
+                if (!NeedHelp && FruitsCollected > 0 && FruitsCollected < MaxFruits && Collecting)
                 {
-                    storageFruits += FruitsCollected; // Add collected fruits to storage
-                    FruitsCollected = 0; // Drop off fruits
-                    NeedHelp = false;
+                    RequestHelp();
                 }
-                return;
-            }
-
-            // Check if collecting time exceeded
-            if (Collecting)
-            {
-                if ((DateTime.Now - collectStartTime).TotalMilliseconds >= maxCollectingTime)
+                if (FruitsCollected > 15 && (DateTime.Now - helpRequestTime).TotalMilliseconds >= 2000)
                 {
-                    Collecting = false;
-                }
-                else
-                {
-                    CollectFruits();
-                    return;
-                }
-            }
-
-            // Check if help request time exceeded
-            if (NeedHelp)
-            {
-                if ((DateTime.Now - helpRequestTime).TotalMilliseconds >= maxHelpRequestTime)
-                {
-                    NeedHelp = false;
-                }
-                else if (HelpDrone != null) // Перевірка на null
-                {
-                    MoveTowards(HelpDrone.Position);
-                    return;
-                }
-            }
-
-            // Help other drones
-            foreach (var otherDrone in allDrones)
-            {
-                if (otherDrone.CanHelp(this))
-                {
-                    MoveTowards(otherDrone.Position);
-                    if (IsAtLocation(otherDrone.Position, 10)) // If the other drone has reached this drone
+                    MoveTowards(storageLocation);
+                    if (IsAtLocation(storageLocation, storageSize))
                     {
-                        int fruitsToTransfer = Math.Min(MaxFruits - FruitsCollected, otherDrone.FruitsCollected);
-                        FruitsCollected += fruitsToTransfer;
-                        otherDrone.FruitsCollected -= fruitsToTransfer;
-                        if (FruitsCollected >= MaxFruits)
+                        storageFruits += FruitsCollected;
+                        FruitsCollected = 0;
+                        NeedHelp = false;
+                    }
+                    return;
+                }
+
+                if (Collecting)
+                {
+                    if ((DateTime.Now - collectStartTime).TotalMilliseconds >= maxCollectingTime)
+                    {
+                        Collecting = false;
+                    }
+                    else
+                    {
+                        CollectFruits();
+                        return;
+                    }
+                }
+
+                if (NeedHelp)
+                {
+                    if ((DateTime.Now - helpRequestTime).TotalMilliseconds >= maxHelpRequestTime)
+                    {
+                        NeedHelp = false;
+                    }
+                    else if (HelpDrone != null)
+                    {
+                        MoveTowards(HelpDrone.Position);
+                        return;
+                    }
+                }
+
+                foreach (var otherDrone in allDrones)
+                {
+                    if (otherDrone.NeedHelp && otherDrone != this)
+                    {
+                        MoveTowards(otherDrone.Position);
+                        return;
+                    }
+                }
+
+                if (FruitsCollected >= MaxFruits)
+                {
+                    MoveTowards(storageLocation);
+                    if (IsAtLocation(storageLocation, storageSize))
+                    {
+                        storageFruits += FruitsCollected;
+                        FruitsCollected = 0;
+                    }
+                    return;
+                }
+
+                if (targetTree != null)
+                {
+                    if (targetTree.Fruits > 0)
+                    {
+                        MoveTowards(targetTree.Position);
+                        if (IsAtLocation(targetTree.Position, 20) && targetTree.Fruits > 0)
                         {
-                            NeedHelp = false;
-                            break; // Stop looking for help after reaching the maximum fruits
+                            StartCollecting(targetTree);
+                        }
+                    }
+                    else
+                    {
+                        targetTree = null;
+                        ChooseRandomDirection();
+                    }
+                    return;
+                }
+
+                Move(panelWidth, panelHeight);
+                foreach (var tree in trees)
+                {
+                    if (tree.Fruits > 0 && IsWithinRadius(tree.Position, ConnectionRadius))
+                    {
+                        targetTree = tree;
+                        break;
+                    }
+                }
+            }
+            else if (swarmMode)
+            {
+                // Логіка для swarmMode
+                if (!NeedHelp && FruitsCollected > 0 && FruitsCollected < MaxFruits && Collecting)
+                {
+                    RequestHelp();
+                }
+                if (FruitsCollected > 15 && (DateTime.Now - helpRequestTime).TotalMilliseconds >= 2000)
+                {
+                    MoveTowards(storageLocation);
+                    if (IsAtLocation(storageLocation, storageSize))
+                    {
+                        storageFruits += FruitsCollected;
+                        FruitsCollected = 0;
+                        NeedHelp = false;
+                    }
+                    return;
+                }
+
+                if (Collecting)
+                {
+                    if ((DateTime.Now - collectStartTime).TotalMilliseconds >= maxCollectingTime)
+                    {
+                        Collecting = false;
+                    }
+                    else
+                    {
+                        CollectFruits();
+                        return;
+                    }
+                }
+
+                if (NeedHelp)
+                {
+                    if ((DateTime.Now - helpRequestTime).TotalMilliseconds >= maxHelpRequestTime)
+                    {
+                        NeedHelp = false;
+                    }
+                    else if (HelpDrone != null)
+                    {
+                        MoveTowards(HelpDrone.Position);
+                        return;
+                    }
+                }
+
+                foreach (var otherDrone in allDrones)
+                {
+                    if (otherDrone.CanHelp(this))
+                    {
+                        MoveTowards(otherDrone.Position);
+                        if (IsAtLocation(otherDrone.Position, 10))
+                        {
+                            int fruitsToTransfer = Math.Min(MaxFruits - FruitsCollected, otherDrone.FruitsCollected);
+                            FruitsCollected += fruitsToTransfer;
+                            otherDrone.FruitsCollected -= fruitsToTransfer;
+                            if (FruitsCollected >= MaxFruits)
+                            {
+                                NeedHelp = false;
+                                break;
+                            }
                         }
                     }
                 }
-            }
 
-
-            // Move towards storage if drone is full
-            if (FruitsCollected >= MaxFruits)
-            {
-                MoveTowards(storageLocation);
-                if (IsAtLocation(storageLocation, storageSize))
+                if (FruitsCollected >= MaxFruits)
                 {
-                    storageFruits += FruitsCollected; // Add collected fruits to storage
-                    FruitsCollected = 0; // Drop off fruits
-                }
-                return;
-            }
-
-            // Move towards target tree if there is one
-            if (targetTree != null)
-            {
-                if (targetTree.Fruits > 0)
-                {
-                    MoveTowards(targetTree.Position);
-                    if (IsAtLocation(targetTree.Position, 20) && targetTree.Fruits > 0)
+                    MoveTowards(storageLocation);
+                    if (IsAtLocation(storageLocation, storageSize))
                     {
-                        StartCollecting(targetTree);
+                        storageFruits += FruitsCollected;
+                        FruitsCollected = 0;
                     }
+                    return;
                 }
-                else
-                {
-                    targetTree = null; // If there are no more fruits on the tree, stop targeting it
-                    ChooseRandomDirection(); // Random direction
-                }
-                return;
-            }
 
-            // Move randomly and search for trees with fruits
-            Move(panelWidth, panelHeight);
-            foreach (var tree in trees)
-            {
-                if (tree.Fruits > 0 && IsWithinRadius(tree.Position, ConnectionRadius))
+                if (targetTree != null)
                 {
-                    targetTree = tree;
-                    break;
+                    if (targetTree.Fruits > 0)
+                    {
+                        MoveTowards(targetTree.Position);
+                        if (IsAtLocation(targetTree.Position, 20) && targetTree.Fruits > 0)
+                        {
+                            StartCollecting(targetTree);
+                        }
+                    }
+                    else
+                    {
+                        targetTree = null;
+                        ChooseRandomDirection();
+                    }
+                    return;
+                }
+
+                Move(panelWidth, panelHeight);
+                foreach (var tree in trees)
+                {
+                    if (tree.Fruits > 0 && IsWithinRadius(tree.Position, ConnectionRadius))
+                    {
+                        targetTree = tree;
+                        break;
+                    }
                 }
             }
         }
+
 
 
         private void ChooseRandomDirection()
