@@ -19,6 +19,10 @@ namespace Diplom
         private Label totalFruitsLabel;
         private DateTime startTime;
         private bool isCompleted;
+        private bool isSwarmAlgorithm = false;
+        private bool isCentralizedAlgorithm = false;
+        private DB db = new DB();
+
 
         public StinkBugs()
         {
@@ -87,7 +91,18 @@ namespace Diplom
             completionLabel.Text = $"All fruits are collected in {elapsed.TotalSeconds:F2} seconds.";
             gameTimer.Stop();
             isCompleted = true;
+            int totalFruits = trees.Sum(tree => tree.InitialFruits);
+            DB db = new DB();
+            if (isSwarmAlgorithm)
+            {
+                db.SaveDataToSwarm(totalFruits, elapsed);
+            }
+            else if (isCentralizedAlgorithm)
+            {
+                db.SaveDataToCentralized(totalFruits, elapsed);
+            }
         }
+
 
 
         private void CheckDroneConnections()
@@ -200,27 +215,34 @@ namespace Diplom
         private void button1_Click(object sender, EventArgs e)
         {
             swarmMode = true;
+            isSwarmAlgorithm = true;
             centralizedMode = false;
-
             StartAlgorithm();
         }
         private void button2_Click(object sender, EventArgs e)
         {
             swarmMode = false;
+            isCentralizedAlgorithm = true;
             centralizedMode = true;
             StartAlgorithm();
         }
 
         private void StartAlgorithm()
         {
-            // Запустити алгоритм
-            gameTimer = new System.Windows.Forms.Timer();
-            gameTimer.Interval = 20; // Оновлювати стан гри кожні 20 мс
-            gameTimer.Tick += new EventHandler(GameUpdate);
-            gameTimer.Start();
-
             startTime = DateTime.Now;
-            button2.Enabled = false; // Вимкнути кнопку після запуску алгоритму
+            isCompleted = false;
+
+            if (gameTimer == null)
+            {
+                gameTimer = new System.Windows.Forms.Timer();
+                gameTimer.Interval = 20;
+                gameTimer.Tick += GameUpdate;
+            }
+
+            if (!gameTimer.Enabled)
+            {
+                gameTimer.Start();
+            }
         }
     }
 
@@ -553,10 +575,12 @@ namespace Diplom
         public Point Position { get; private set; }
         public int Fruits { get; set; }
 
+        public int InitialFruits { get; private set; }
         public Tree(Point position, int fruits)
         {
-            this.Position = position;
-            this.Fruits = fruits;
+            Position = position;
+            Fruits = fruits;
+            InitialFruits = fruits; // Зберігаємо початкову кількість фруктів
         }
     }
 }
