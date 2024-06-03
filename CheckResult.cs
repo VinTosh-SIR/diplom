@@ -15,7 +15,7 @@ namespace Diplom
         {
             InitializeComponent();
             InitializeChart();
-            LoadDataFromDatabase("swarm");
+            LoadDataFromDatabase("centralized");
         }
 
         private void InitializeChart()
