@@ -45,6 +45,10 @@
         "net8.0-windows7.0": {
           "targetAlias": "net8.0-windows",
           "dependencies": {
+            "HIC.System.Windows.Forms.DataVisualization": {
+              "target": "Package",
+              "version": "[1.0.1, )"
+            },
             "MySql.Data": {
               "target": "Package",
               "version": "[8.4.0, )"

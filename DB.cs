@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Data;
 using MySql.Data.MySqlClient;
 
 namespace Diplom
@@ -48,5 +49,31 @@ namespace Diplom
             }
             closeConnection();
         }
+        public DataTable GetCheckResultData(string tableName)
+        {
+            DataTable checkResultData = new DataTable();
+
+            try
+            {
+                openConnection();
+
+                string query = $"SELECT startNumberOfFruits, executionTime FROM {tableName}";
+                MySqlCommand cmd = new MySqlCommand(query, connection);
+                MySqlDataAdapter adapter = new MySqlDataAdapter(cmd);
+
+                adapter.Fill(checkResultData);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Error fetching check result data: " + ex.Message);
+            }
+            finally
+            {
+                closeConnection();
+            }
+
+            return checkResultData;
+        }
+
     }
 }
