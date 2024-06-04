@@ -2,6 +2,7 @@
 {
     partial class StinkBugs
     {
+
         private System.ComponentModel.IContainer components = null;
         private Panel panel1;
         private Panel panel2;

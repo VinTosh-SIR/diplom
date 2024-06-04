@@ -147,6 +147,8 @@ namespace Diplom
             label2.TabIndex = 2;
             label2.Text = "TEST ";
             label2.TextAlign = ContentAlignment.MiddleCenter;
+            label2.MouseDown += mouseDown;
+            label2.MouseMove += mouseMove;
             // 
             // Start
             // 
@@ -177,6 +179,7 @@ namespace Diplom
         private Panel panel5;
         private Label label1;
 
+  
         private void changeFormToStinkBugs(object sender, EventArgs e)
         {
             var frm = new StinkBugs();
