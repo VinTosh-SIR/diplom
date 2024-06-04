@@ -307,7 +307,7 @@ namespace Diplom
                 {
                     RequestHelp();
                 }
-                if (FruitsCollected > 15 && (DateTime.Now - helpRequestTime).TotalMilliseconds >= 2000)
+                if (FruitsCollected >= MaxFruits && (DateTime.Now - helpRequestTime).TotalMilliseconds >= 2000)
                 {
                     MoveTowards(storageLocation);
                     if (IsAtLocation(storageLocation, storageSize))
@@ -338,7 +338,7 @@ namespace Diplom
                     {
                         NeedHelp = false;
                     }
-                    else if (HelpDrone != null)
+                    else if (HelpDrone != null && FruitsCollected < MaxFruits)
                     {
                         MoveTowards(HelpDrone.Position);
                         return;
@@ -347,7 +347,7 @@ namespace Diplom
 
                 foreach (var otherDrone in allDrones)
                 {
-                    if (otherDrone.NeedHelp && otherDrone != this)
+                    if (otherDrone.NeedHelp && otherDrone != this && FruitsCollected < MaxFruits)
                     {
                         MoveTowards(otherDrone.Position);
                         return;
@@ -393,6 +393,7 @@ namespace Diplom
                     }
                 }
             }
+
             else if (swarmMode)
             {
                 // Логіка для swarmMode
