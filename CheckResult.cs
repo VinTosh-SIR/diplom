@@ -39,19 +39,12 @@ namespace Diplom
             // Очищення графіку перед оновленням
             chart.Series.Clear();
 
-            // Створення нової серії даних для графіку (для основних даних)
-            Series seriesMain = new Series
-            {
-                ChartType = SeriesChartType.Line,
-                BorderWidth = 3,
-                Color = tableName == "swarm" ? Color.Blue : Color.Red // Вибіраємо колір в залежності від таблиці
-            };
-
-            // Створення нової серії даних для графіку (для додаткових даних, зелені точки)
-            Series seriesAdditional = new Series
+            // Створення нової серії даних для графіку
+            Series series = new Series
             {
                 ChartType = SeriesChartType.Point,
-                Color = Color.Green,
+                BorderWidth = 3,
+                Color = tableName == "swarm" ? Color.Blue : Color.Red, // Вибираємо колір в залежності від таблиці
                 MarkerStyle = MarkerStyle.Circle,
                 MarkerSize = 8
             };
@@ -60,24 +53,20 @@ namespace Diplom
             chart.ChartAreas[0].AxisX.Title = "Зібрано плодів";
             chart.ChartAreas[0].AxisY.Title = "Час (секунди)";
 
-            // Додавання даних до серій
+            // Додавання даних до серії
             foreach (DataRow row in data.Rows)
             {
                 int startNumberOfFruits = Convert.ToInt32(row["startNumberOfFruits"]);
                 double executionTimeSeconds = TimeSpan.Parse(row["executionTime"].ToString()).TotalSeconds;
 
-                seriesMain.Points.AddXY(startNumberOfFruits, executionTimeSeconds);
-
-                // Додавання зелених точок для додаткової серії
-                seriesAdditional.Points.AddXY(startNumberOfFruits, executionTimeSeconds);
+                DataPoint point = new DataPoint(startNumberOfFruits, executionTimeSeconds);
+                point.Label = $"({startNumberOfFruits}, {executionTimeSeconds})";
+                series.Points.Add(point);
             }
 
-            // Додавання серій до графіку
-            chart.Series.Add(seriesMain);
-            chart.Series.Add(seriesAdditional);
+            // Додавання серії до графіку
+            chart.Series.Add(series);
         }
-
-
 
         private void buttonSwarm_Click(object sender, EventArgs e)
         {

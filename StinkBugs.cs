@@ -197,9 +197,9 @@ namespace Diplom
         {
             for (int i = 0; i < numberOfTrees; i++)
             {
-                int x = random.Next(panel2.Width - 20); // Adjust for tree width
-                int y = random.Next(panel2.Height - 20); // Adjust for tree height
-                int fruits = random.Next(15, 24); // Random number of fruits between 37 and 95
+                int x = random.Next(panel2.Width - 20); 
+                int y = random.Next(panel2.Height - 20); 
+                int fruits = random.Next(15, 24); 
                 trees.Add(new Tree(new Point(x, y), fruits));
             }
         }
@@ -302,7 +302,6 @@ namespace Diplom
         {
             if (centralizedMode)
             {
-                // Логіка для centralizedMode
                 if (!NeedHelp && FruitsCollected > 0 && FruitsCollected < MaxFruits && Collecting)
                 {
                     RequestHelp();
@@ -531,7 +530,7 @@ namespace Diplom
         {
             Position = new Point(Position.X + dx, Position.Y + dy);
 
-            // Bounce off walls
+ 
             if (Position.X < 0 || Position.X > panelWidth - 10) dx = -dx;
             if (Position.Y < 0 || Position.Y > panelHeight - 10) dy = -dy;
         }
@@ -581,7 +580,7 @@ namespace Diplom
         {
             Position = position;
             Fruits = fruits;
-            InitialFruits = fruits; // Зберігаємо початкову кількість фруктів
+            InitialFruits = fruits; 
         }
     }
 }
